@@ -44,14 +44,12 @@ Beispiel:
 ```
 
 - `port`: Port, auf dem der lokale Express‑Server läuft (z. B. `59123`).
-- `hotkey`: Globaler Shortcut, um das Kamera‑Grid zu toggeln (z. B. `Control+Alt+G`). [electronjs](https://electronjs.org/docs/latest/tutorial/tutorial-first-app)
+- `hotkey`: Globaler Shortcut, um das Kamera‑Grid zu toggeln (z. B. `Control+Alt+G`). 
 - `cameras[]`:
   - `id`: Technische ID für den Stream‑Endpoint (`/live/<id>`).
   - `name`: Anzeigename im UI.
   - `url`: RTSP‑URL deiner Kamera (inkl. Benutzer/Passwort, falls nötig).  
 
-⚠️ **Wichtig:**  
-Speichere keine echten Passwörter in einem öffentlichen Repository.
 
 ***
 
