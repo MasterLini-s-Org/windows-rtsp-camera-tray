@@ -1,0 +1,10 @@
+{
+  "port": 59123,
+  "shortcut": "Control+Alt+G+1",
+  "cameras": [
+    { "id": "cam1", "name": "Einfahrt", "url": "rtsp://user(meist_admin):Passwort@IP:554/Streaming/Channels/101/" },
+    { "id": "cam2", "name": "Haustüre", "url": "rtsp://user(meist_admin):Passwort@IP:554/Streaming/Channels/101/" }, 
+    { "id": "cam3", "name": "Garten", "url": "rtsp://user(meist_admin):Passwort@IP:554/Streaming/Channels/101/" }, 
+    { "id": "cam4", "name": "Wintergarten", "url": "rtsp://user(meist_admin):Passwort@IP:554/Streaming/Channels/101/" }
+  ]
+}

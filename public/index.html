@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.min.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            background: #1a1a1a; 
+            color: white; 
+            font-family: sans-serif; 
+            overflow: hidden;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px;
+            padding: 10px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .grid-container:has(> .cam-slot:nth-child(3):last-child) .cam-slot:last-child {
+            grid-column: span 2;
+        }
+
+        .grid-container:has(> .cam-slot:first-child:last-child) {
+            grid-template-columns: 1fr;
+        }
+        .cam-slot {
+            position: relative;
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            flex-grow: 1;
+            background: #000;
+        }
+        .label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 10;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cameraGrid" class="grid-container"></div>
+
+    <script>
+        async function initStreams() {
+            const grid = document.getElementById('cameraGrid');
+            
+            try {
+                const response = await fetch('/config');
+                const config = await response.json();
+
+                config.cameras.forEach(cam => {
+                    const slot = document.createElement('div');
+                    slot.className = 'cam-slot';
+                    slot.innerHTML = `
+                        <div class="label">${cam.name}</div>
+                        <video id="video-${cam.id}" autoplay muted playsinline></video>
+                    `;
+                    grid.appendChild(slot);
+
+                    const videoElement = document.getElementById(`video-${cam.id}`);
+
+                    function startPlayer() {
+                        if (mpegts.getFeatureList().mseLivePlayback) {
+                            const player = mpegts.createPlayer({
+                                type: 'mse',
+                                isLive: true,
+                                url: `http://localhost:${config.port}/live/${cam.id}`
+                            }, {
+                                enableWorker: true,
+                                stashInitialSize: 128,
+                                liveBufferLatencyChasing: true, // Verringert Verzögerungen aktiv
+                            });
+                            
+                            player.attachMediaElement(videoElement);
+                            player.load();
+                            
+                            // Wichtig: Play-Promise abfangen (Browser-Policy)
+                            player.play().catch(e => console.error("Autoplay verhindert:", e));
+
+                            player.on(mpegts.Events.ERROR, (type, detail, info) => {
+                                console.warn(`Stream Fehler (${cam.name}):`, type, detail);
+                                player.unload();
+                                player.detachMediaElement();
+                                player.destroy();
+                                // Reconnect nach 3 Sekunden
+                                setTimeout(startPlayer, 1000);
+                            });
+                        }
+                    }
+                    startPlayer();
+                });
+            } catch (err) {
+                console.error("Konnte Config nicht laden:", err);
+            }
+        }
+
+        initStreams();
+    </script>
+</body>
+</html>
